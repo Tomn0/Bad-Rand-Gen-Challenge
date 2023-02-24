@@ -28,58 +28,19 @@ print(public_key_pem)
 
 p = private_key.private_numbers().p
 q = private_key.private_numbers().q
-
+print()
 print(p)
 print(q)
 
 
 
-def chatpgt_method():
-  # Generate two 2048-bit prime numbers
-  p = getPrime(2048)
-  q = getPrime(2048)
+def calculate_keys(p,q):
+    e = 65537
+    n = p * q # here calculate public modulus
+    public_numbers = rsa.RSAPublicNumbers(e,n)
 
-  # Calculate n and phi(n)
-  n = p * q
-  phi_n = (p - 1) * (q - 1)
+    # TODO: use utility functions to calculate iqmp,dmp1,dmq1
+    res = rsa.RSAPrivateNumbers(p,q,0,0,0,0,public_numbers)
+    print(res.private_key())
 
-  # Choose a public exponent
-  e = 65537
-
-  # Calculate the private exponent
-  d = pow(e, -1, phi_n)
-
-  # Create an RSAPublicNumbers object
-  public_numbers = rsa.RSAPublicNumbers(e, n)
-
-  # Calculate the other private key parameters
-  dmp1 = d % (p - 1)
-  dmq1 = d % (q - 1)
-  iqmp = pow(q, -1, p)
-
-  # Create an RSA private key
-  private_key = rsa.RSAPrivateNumbers(p, q, d, dmp1, dmq1, iqmp, None).private_key(default_backend())
-
-  # Serialize the private key to PEM format
-  private_key_pem = private_key.private_bytes(
-      encoding=serialization.Encoding.PEM,
-      format=serialization.PrivateFormat.PKCS8,
-      encryption_algorithm=serialization.NoEncryption(),
-  )
-
-  # Get the public key
-  public_key = private_key.public_key()
-
-  # Serialize the public key to PEM format
-  public_key_pem = public_key.public_bytes(
-      encoding=serialization.Encoding.PEM,
-      format=serialization.PublicFormat.SubjectPublicKeyInfo,
-  )
-
-  # Print the private and public keys
-  print(private_key_pem.decode())
-  print(public_key_pem.decode())
-
-  # Print the prime factors used to create the private key
-  print("p: ", p)
-  print("q: ", q)
+calculate_keys(p,q)
