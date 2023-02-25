@@ -1,4 +1,4 @@
-from Crypto.Util.number import getPrime
+# from Crypto.Util.number import getPrime
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
@@ -37,10 +37,39 @@ print(q)
 def calculate_keys(p,q):
     e = 65537
     n = p * q # here calculate public modulus
+    phi = (p-1)*(q-1)
+    d = pow(e,-1,phi)
     public_numbers = rsa.RSAPublicNumbers(e,n)
 
-    # TODO: use utility functions to calculate iqmp,dmp1,dmq1
-    res = rsa.RSAPrivateNumbers(p,q,0,0,0,0,public_numbers)
-    print(res.private_key())
+    private_exponent = d
+    iqmp = rsa.rsa_crt_iqmp(p,q)
+    dmp1 = rsa.rsa_crt_dmp1(private_exponent, p)
+    dmq1 = rsa.rsa_crt_dmq1(private_exponent, q)
+    res = rsa.RSAPrivateNumbers(p,q,d,dmp1=dmp1,dmq1=dmq1,iqmp=iqmp,public_numbers=public_numbers)
+    
+    priv = res.private_key()
+    public_key = priv.public_key()
 
-calculate_keys(p,q)
+    
+    # Serialize the private key to PEM format
+    private_key_pem = priv.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+
+    # Serialize the public key to PEM format
+    public_key_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+
+    print(private_key_pem.decode())
+    print(public_key_pem)
+    
+    return private_key_pem.decode(), public_key_pem
+
+priv, publ = calculate_keys(p,q)
+
+print(private_key_pem.decode() == priv)
+print(public_key_pem == publ)
