@@ -121,18 +121,12 @@ def create_weak_key(first = 1, second = 4):
 ##################
 
 if __name__ == "__main__":
-    generate five keypairs
+    # generate five keypairs
     for i in range(5):
         keypair = KeyPair(name=i)
     
     # create a weak key - public_key2.pem and public_key4.pem 
     create_weak_key(first = 1, second = 4)
-
-
-
-
-
-
 
 
 # key1 = load_publ_key(1)

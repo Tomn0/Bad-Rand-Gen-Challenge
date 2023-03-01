@@ -31,12 +31,17 @@ def self_sign_cert(keypair_id):
         private_key, hashes.SHA256(), default_backend()
     )
 
+    # print(certificate.fingerprint(hashes.SHA256()))
     print(certificate.public_bytes(serialization.Encoding.PEM).decode())
 
     # Write our certificate out to disk.
     with open(f"certificate{keypair_id}.pem", "wb") as f:
-        f.write(ccertificateert.public_bytes(serialization.Encoding.PEM))
+        f.write(certificate.public_bytes(serialization.Encoding.PEM))
+
+
 
 if __name__ == "__main__":
-    self_sign_cert(0)
+    # generate all 5 self-signed certificates
+    for i in range(5):
+        self_sign_cert(i)
 
