@@ -1,27 +1,20 @@
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
-import math
+from math import gcd
 
 class KeyPair():
     
-    def __init__(self, key_size=1024, public_exponent=65537, p=None, q =None) -> None:
+    def __init__(self, name=0, key_size=2048, public_exponent=65537, p=None, q =None) -> None:
         self.p = p
         self.q = q
         self.public_exponent=public_exponent
         self.key_size=key_size
+        self.name = name
         
-        # generate multiple keypairs
-        # for i in range(5):
-        #     publ, priv = self.create_keypair()
-        #     self.save_pem(publ, priv, name=i)       
-
-        # generate one key
         publ, priv = self.create_keypair()
-        self.save_pem(publ, priv, name="weak")       
+        self.save_pem(publ, priv, name)       
 
-
-    
     def __create_private(self):
         if self.p == None or self.q == None:
             print("Creating new private key")
@@ -75,16 +68,16 @@ class KeyPair():
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         ))
 
-# keypair = KeyPair()
 
-###########
-# SOLVING #
-###########
+##################
+# Util functions #
+##################
 
 def load_publ_key(name=None):
     with open(f"public_key{name}.pem", "rb") as key_file:
         public_key = serialization.load_pem_public_key(
-            key_file.read()
+            key_file.read(),
+            backend=default_backend()
         )
 
     return public_key
@@ -95,9 +88,51 @@ def load_priv_key(name=None):
         private_key = serialization.load_pem_private_key(
             key_file.read(),
             password=None,
+            backend=default_backend()
         )
 
-        return private_key
+    return private_key
+
+
+#####################
+## Create weak key ##
+#####################
+def create_weak_key(first = 1, second = 4):
+    first_key_publ = load_publ_key(first)
+    first_key_priv = load_priv_key(first)
+    print("Loaded first key..")
+    print("n = ", first_key_publ.public_numbers().n)
+    print("p = ", first_key_priv.private_numbers().p)
+    print("q = ", first_key_priv.private_numbers().q)
+
+    second_key_publ = load_publ_key(second)
+    second_key_priv = load_priv_key(second)
+    print("Loaded second key..")
+    print("n = ", second_key_publ.public_numbers().n)
+    print("p = ", second_key_priv.private_numbers().p)
+    print("q = ", second_key_priv.private_numbers().q)
+
+    # save the weak keypair by replacing the keypair nr 4 
+    new_keypair = KeyPair(name=second, key_size=2048, public_exponent=65537, p=first_key_priv.private_numbers().p, q =second_key_priv.private_numbers().q)
+
+
+##################
+# Key Generation #
+##################
+
+if __name__ == "__main__":
+    generate five keypairs
+    for i in range(5):
+        keypair = KeyPair(name=i)
+    
+    # create a weak key - public_key2.pem and public_key4.pem 
+    create_weak_key(first = 1, second = 4)
+
+
+
+
+
+
 
 
 # key1 = load_publ_key(1)
@@ -118,48 +153,3 @@ def load_priv_key(name=None):
 # print(key1.public_numbers().n)
 # print(key2.public_numbers().e)
 # # print(key1.private_numbers().p)
-
-##########################
-## Create two weak keys ##
-##########################
-def create_weak_key():
-    first_key_publ = load_publ_key(1)
-    first_key_priv = load_priv_key(1)
-    print("Loaded first key..")
-    print("n = ", first_key_publ.public_numbers().n)
-    print("p = ", first_key_priv.private_numbers().p)
-    print("q = ", first_key_priv.private_numbers().q)
-
-    second_key_publ = load_publ_key(4)
-    second_key_priv = load_priv_key(4)
-    print("Loaded second key..")
-    print("n = ", second_key_publ.public_numbers().n)
-    print("p = ", second_key_priv.private_numbers().p)
-    print("q = ", second_key_priv.private_numbers().q)
-
-    new_keypair = KeyPair(key_size=1024, public_exponent=65537, p=first_key_priv.private_numbers().p, q =second_key_priv.private_numbers().q)
-
-#####################
-# Exploit weak keys #
-#####################
-first_key_publ = load_publ_key(1)
-second_key_publ = load_publ_key("weak")
-
-n1 = first_key_publ.public_numbers().n
-n2 = second_key_publ.public_numbers().n
-
-first_key_publ = load_publ_key(1)
-first_key_priv = load_priv_key(1)
-print("Loaded first key..")
-print("n = ", first_key_publ.public_numbers().n)
-print("p = ", first_key_priv.private_numbers().p)
-print("q = ", first_key_priv.private_numbers().q)
-
-second_key_publ = load_publ_key("weak")
-second_key_priv = load_priv_key("weak")
-print("Loaded second key..")
-print("n = ", second_key_publ.public_numbers().n)
-print("p = ", second_key_priv.private_numbers().p)
-print("q = ", second_key_priv.private_numbers().q)
-
-print("GCD = ", math.gcd(n1, n2))
