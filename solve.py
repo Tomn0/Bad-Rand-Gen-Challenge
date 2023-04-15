@@ -6,10 +6,11 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography import x509
 from math import gcd
+import os
 
 # a constant to set the number of keypairs used 
 KEYPAIRS = 5
-
+CERTS_PATH = "certs"
 
 
 def exploit_weak_keys(id, p, q, publ_key: RSAPublicKey):
@@ -36,7 +37,7 @@ def exploit_weak_keys(id, p, q, publ_key: RSAPublicKey):
 
 
   # open the secret
-  with open(f"secret{id}", "rb") as f:
+  with open(f"secrets/secret{id}", "rb") as f:
     ciphertext = f.read()
 
   # decrypt
@@ -58,7 +59,7 @@ def exploit_weak_keys(id, p, q, publ_key: RSAPublicKey):
 
 for first in range(KEYPAIRS):
   # load the public key from the certificate
-  with open(f"certificate{first}.pem", "rb") as f:   
+  with open(f"{CERTS_PATH}/certificate{first}.pem", "rb") as f:   
     pem_data = f.read()
     first_cert = x509.load_pem_x509_certificate(pem_data)
     first_publ_key = first_cert.public_key()
@@ -71,7 +72,7 @@ for first in range(KEYPAIRS):
       continue
     print(f"Trying public key {first} vs public key {second}...")
     
-    with open(f"certificate{second}.pem", "rb") as f:   
+    with open(f"{CERTS_PATH}/certificate{second}.pem", "rb") as f:   
       pem_data = f.read()
       second_cert = x509.load_pem_x509_certificate(pem_data)
       second_publ_key = second_cert.public_key()
@@ -90,9 +91,6 @@ for first in range(KEYPAIRS):
 
       plaintext = exploit_weak_keys(second, p, q, second_publ_key)
       print("The flag is: ", plaintext)
-      break
-    break
-
-
-
+    #   break
+    # break
 

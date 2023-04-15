@@ -19,12 +19,12 @@ key_size = 2048
 private_key = rsa.generate_private_key(public_exponent=65537, key_size=key_size)
 
 # Save private key to file
-with open("private_key.pem", "wb") as f:
+with open("test/private_key.pem", "wb") as f:
     f.write(private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption()))
 
 # Save public key to file
 public_key = private_key.public_key()
-with open("public_key.pem", "wb") as f:
+with open("test/public_key.pem", "wb") as f:
     f.write(public_key.public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo))
 
 # Save prime factors p and q to variables

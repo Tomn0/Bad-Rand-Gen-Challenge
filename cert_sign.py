@@ -4,6 +4,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 import datetime
 from bad_random_generator import load_priv_key
+import os
 
 # Generate a private key
 # private_key = rsa.generate_private_key(
@@ -11,6 +12,11 @@ from bad_random_generator import load_priv_key
 #     key_size=2048,
 #     backend=default_backend()
 # )
+
+CERTS_PATH = "certs"
+
+if not os.path.exists(CERTS_PATH):
+    os.makedirs(CERTS_PATH)
 
 def self_sign_cert(keypair_id):
     private_key = load_priv_key(keypair_id)
@@ -32,10 +38,10 @@ def self_sign_cert(keypair_id):
     )
 
     # print(certificate.fingerprint(hashes.SHA256()))
-    print(certificate.public_bytes(serialization.Encoding.PEM).decode())
+    # print(certificate.public_bytes(serialization.Encoding.PEM).decode())
 
     # Write our certificate out to disk.
-    with open(f"certificate{keypair_id}.pem", "wb") as f:
+    with open(f"{CERTS_PATH}/certificate{keypair_id}.pem", "wb") as f:
         f.write(certificate.public_bytes(serialization.Encoding.PEM))
 
 
